@@ -3,3 +3,7 @@ https://github.com/ayaha401/TaToonShader/blob/431c0ea1010510a932be881c4fbb2e4338
 
 動画はこれ
 https://x.com/ayaha__401/status/1866140561197138047
+
+
+Spriteに自動で判定つけるのはここから
+https://github.com/ayaha401/AutoCreateShadowCaster2DShape
