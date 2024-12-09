@@ -41,6 +41,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
             #pragma multi_compile USE_SHAPE_LIGHT_TYPE_3 __
             #pragma multi_compile _ DEBUG_DISPLAY
 
+            // ノーマル用にいくつか追加
             struct Attributes
             {
                 float3 positionOS   : POSITION;
@@ -50,6 +51,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
+            // ノーマル用にいくつか追加
             struct Varyings
             {
                 float4  positionCS  : SV_POSITION;
@@ -121,6 +123,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/CombinedShapeLightShared.hlsl"
 
+            // TaToonかいつものテンプレートコードから持ってきた
             inline half CalcRimlight(half3 V, half3 N, float width, float intensity)
             {
                 float rim = pow(saturate(1. - dot(V, N) + width), intensity);
@@ -143,14 +146,20 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
                 half4 color = (half4)0.0;
                 color = CombinedShapeLightShared(surfaceData, inputData);
 
+                // mainTex計算いらない
                 const half4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
                 const half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
 
+                // 上のPassで作った(プログラム的には下だけどフレームデバッガーで見たときはNormalの計算は上流でしてる)のNormalの情報持ってきてここで処理できたほうがいい、Normalの計算またここでやってる
                 half3 normal = NormalsRenderingShared(main, normalTS, i.tangentWS.xyz, i.bitangentWS.xyz, i.normalWS.xyz);
+
+                // 適当に計算したからなんかつじつま会わなくなってひとまず1.0で引いといた
                 half rim = 1.0 - CalcRimlight(float3(0.0, 0.0, 1.0), normal, _Width, _Intensity);
 
+                // 適当に赤
                 color.rgb += rim * half3(1.0, 0.0, 0.0);
 
+                // デバッグ用
                 // color.rgb = rim.rrr;
                 return color;
             }
@@ -208,6 +217,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
                 return o;
             }
 
+            // 適当過ぎた、使わん
             // half4 NormalsRenderingShared(half4 color, half3 normalTS, half3 tangent, half3 bitangent, half3 normal)
             // {
             //     half4 normalColor;
@@ -227,6 +237,8 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/NormalsRenderingShared.hlsl"
 
+            // ここでNormalの情報を先に作ってNormalとLightのPassで書きこんでた
+            // だから本当はここらへんで処理書けたらよかったかも
             half4 NormalsRenderingFragment(Varyings i) : SV_Target
             {
                 const half4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
@@ -237,6 +249,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit"
             ENDHLSL
         }
 
+        // しらない
         Pass
         {
             Tags { "LightMode" = "UniversalForward" "Queue"="Transparent" "RenderType"="Transparent"}
